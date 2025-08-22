@@ -15,25 +15,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4   # ✅ update to v4
 
       - name: Setup Pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@v4   # ✅ latest version
 
       - name: Build Site
         run: |
           mkdir -p public
-          cp -r * public/   # assumes static site files in repo root
+          cp -r * public/
           echo "yourdomain.com" > public/CNAME  # custom domain
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3   # ✅ latest version
         with:
           path: public
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4   # ✅ latest version
 
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2
