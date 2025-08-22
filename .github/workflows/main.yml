@@ -11,34 +11,52 @@ permissions:
   id-token: write
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4   # ✅ update to v4
+      # 1️⃣ Checkout repository
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4   # ✅ latest version
-
-      - name: Build Site
+      # 2️⃣ Install dependencies & build site (adjust if you use npm, yarn, or another build tool)
+      - name: Install dependencies & build
         run: |
-          mkdir -p public
-          cp -r * public/
-          echo "yourdomain.com" > public/CNAME  # custom domain
+          npm install
+          npm run build    # ensure this outputs to a folder like 'dist' or 'build'
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3   # ✅ latest version
+      # 3️⃣ Configure Pages
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v4
         with:
-          path: public
+          enablement: automatic
 
+      # 4️⃣ Upload Pages artifact
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./dist   # change this to your build output folder
+
+      # 5️⃣ Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4   # ✅ latest version
+        uses: actions/deploy-pages@v2
 
+      # 6️⃣ Slack notification (success)
       - name: Slack Notification
+        if: success()
         uses: rtCamp/action-slack-notify@v2
-        env:
+        with:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_USERNAME: "GitHub Actions"
-          SLACK_TITLE: "🚀 GitHub Pages Deployment Completed"
-          SLACK_MESSAGE: "Portfolio site deployed successfully!"
+          SLACK_TITLE: "✅ Portfolio deployed successfully!"
+          SLACK_MESSAGE: "Your portfolio site is now live."
+          SLACK_COLOR: good
+
+      # 7️⃣ Slack notification (failure)
+      - name: Slack Notification on Failure
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        with:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_TITLE: "❌ Portfolio deployment failed!"
+          SLACK_MESSAGE: "Check the GitHub Actions logs for details."
+          SLACK_COLOR: danger
